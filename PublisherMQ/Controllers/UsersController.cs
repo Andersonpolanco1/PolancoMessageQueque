@@ -13,24 +13,20 @@ namespace PublisherMQ.Controllers
 
         private readonly ILogger<UsersController> _logger;
         private readonly IMessageQuequeProducer _producer;
-        private readonly RabbitMQConfig _rabbitOptions;
 
-        public UsersController(ILogger<UsersController> logger,
-            IMessageQuequeProducer producer,
-            IOptions<RabbitMQConfig> rabbitOptions
-            )
+        public UsersController(ILogger<UsersController> logger, IMessageQuequeProducer producer)
         {
             _logger = logger;
             _producer = producer;
-            _rabbitOptions = rabbitOptions.Value;
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] User user, string? exchange, string? routerkey)
+        public IActionResult Post([FromBody] User user)
         {
-
+            //Aqui haces las acciones que debas hacer antes de publicar a las colas
             _producer.PublishUser(user);
-            return Ok($"[RabbitMQ] Pusblished: UserId {user.Id}");
+            _logger.LogInformation($"[RabbitMQ] Pusblished: UserId {user.Id}");
+            return Ok();
         }
 
     }

@@ -32,14 +32,14 @@ namespace Producer.MessageQueque
             };
             connection = conectionFactory.CreateConnection();
 
-            using (var channel = _connection.CreateModel())
+            using (var channel = connection.CreateModel())
             {
                 channel.ExchangeDeclare(_rabbitConf.MainExchange, ExchangeType.Fanout, false);
                 channel.ExchangeDeclare(_rabbitConf.StaticsExchange, ExchangeType.Direct, false);
 
-                channel.QueueDeclare(_rabbitConf.NewUsersQueque,false, false);
-                channel.QueueDeclare(_rabbitConf.DeletedUsersQueque, false, false);
-                channel.QueueDeclare(_rabbitConf.UsersActionsQueue, false, false);
+                channel.QueueDeclare(_rabbitConf.NewUsersQueque,false, false,false);
+                channel.QueueDeclare(_rabbitConf.DeletedUsersQueque, false, false,false);
+                channel.QueueDeclare(_rabbitConf.UsersActionsQueue, false, false,false);
 
                 channel.QueueBind(_rabbitConf.NewUsersQueque, _rabbitConf.MainExchange, _rabbitConf.RouterKey1);
                 channel.QueueBind(_rabbitConf.DeletedUsersQueque, _rabbitConf.MainExchange, _rabbitConf.RouterKey2);
@@ -60,7 +60,7 @@ namespace Producer.MessageQueque
             PublishMessage(objetoSerializado, _rabbitConf.StaticsExchange, _rabbitConf.UsersActionsRouterKey);
         }
 
-        public void PublishMessage(string message, string exchange, string routerkey)
+        private void PublishMessage(string message, string exchange, string routerkey)
         {
             try
             {

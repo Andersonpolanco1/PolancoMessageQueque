@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Consumer2App.MessageQueque
 {
-    public class RabbitMQConsumer : IHostedService
+    public class RabbitMQConsumer : IMessageQueueConsumer
     {
         private readonly IConnection _connection;
         private readonly IModel _channel;
@@ -51,7 +51,7 @@ namespace Consumer2App.MessageQueque
             try
             {
                 var consumer = new EventingBasicConsumer(_channel);
-                consumer.Received += (sender, eventArgs) => HandleMessage(eventArgs); 
+                consumer.Received += (sender, eventArgs) => HandleMessage(sender, eventArgs); 
                 _channel.BasicConsume(_queueName, false, consumer);
             }
             catch (Exception ex)
@@ -63,7 +63,7 @@ namespace Consumer2App.MessageQueque
             return Task.CompletedTask;
         }
 
-        private void HandleMessage(BasicDeliverEventArgs eventArgs)
+        public void HandleMessage(object? sender,BasicDeliverEventArgs eventArgs)
         {
             try
             {
@@ -79,8 +79,10 @@ namespace Consumer2App.MessageQueque
                 {
                     //Simula persistencia en bd (temporal)
                     HomeController.Users.Add(user);
+                    _channel.BasicAck(eventArgs.DeliveryTag, false);
+                    _logger.LogInformation($"[RabbitMQ] procesado: UserId {user.Id}");
                 }
-                _channel.BasicAck(eventArgs.DeliveryTag, false);
+
             }
             catch (Exception ex)
             {
