@@ -7,6 +7,7 @@ namespace Consumer2App.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        public static List<User> Users = new();
 
         public HomeController(ILogger<HomeController> logger)
         {
@@ -15,7 +16,7 @@ namespace Consumer2App.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return View(Users);
         }
 
         public IActionResult Privacy()

@@ -1,4 +1,4 @@
-﻿namespace Producer.Models
+﻿namespace Consumer2App.Models
 {
     public enum Action { Deleted, Created }
 

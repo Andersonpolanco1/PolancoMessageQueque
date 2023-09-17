@@ -12,5 +12,8 @@
         public string RouterKey1 { get; set; }        
         public string DeletedUsersQueque { get; set; }
         public string RouterKey2 { get; set; }
+        public string StaticsExchange { get; set; }
+        public string UsersActionsQueue { get; set; }
+        public string UsersActionsRouterKey { get; set; }
     }
 }

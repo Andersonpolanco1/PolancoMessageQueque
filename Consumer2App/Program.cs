@@ -1,7 +1,14 @@
+using Consumer2App.MessageQueque;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+#region Rabbitmq Config
+builder.Services.Configure<RabbitMQConfig>(builder.Configuration.GetSection(RabbitMQConfig.SectionName));
+builder.Services.AddHostedService<RabbitMQConsumer>();
+#endregion
 
 var app = builder.Build();
 

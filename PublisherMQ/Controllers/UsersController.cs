@@ -29,7 +29,7 @@ namespace PublisherMQ.Controllers
         public IActionResult Post([FromBody] User user, string? exchange, string? routerkey)
         {
 
-            _producer.PublishUser(user, exchange ?? _rabbitOptions.MainExchange, routerkey ?? _rabbitOptions.RouterKey1);
+            _producer.PublishUser(user);
             return Ok($"[RabbitMQ] Pusblished: UserId {user.Id}");
         }
 

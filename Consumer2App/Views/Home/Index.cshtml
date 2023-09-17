@@ -1,4 +1,6 @@
-﻿@{
+﻿@model System.Collections.Generic.List<User>
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -6,3 +8,37 @@
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Deleted users list</title>
+</head>
+<body>
+    <h1>Deleted users list</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var usuario in Model)
+            {
+                <tr>
+                    <td>@usuario.Id</td>
+                    <td>@usuario.Username</td>
+                    <td>@usuario.Email</td>
+                    <td>@usuario.Date.ToShortDateString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>
+

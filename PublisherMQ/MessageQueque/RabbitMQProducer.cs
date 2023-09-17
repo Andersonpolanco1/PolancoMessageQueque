@@ -4,6 +4,7 @@ using Producer.ConfigModel;
 using Producer.Models;
 using RabbitMQ.Client;
 using System.Text;
+using Action = Producer.Models.Action;
 
 namespace Producer.MessageQueque
 {
@@ -13,62 +14,50 @@ namespace Producer.MessageQueque
         private ILogger<RabbitMQProducer> _logger;
         private IConnection _connection;
 
-
         public RabbitMQProducer(IOptions<RabbitMQConfig> rabbitOptions, ILogger<RabbitMQProducer> logger)
         {
             _rabbitConf = rabbitOptions.Value;
             _logger = logger;
-            Connect();
-
+            Init(_rabbitConf, out _connection);
         }
 
-        private void SetConnectionFactory()
+        private void Init(RabbitMQConfig rabbitMQConfig, out IConnection connection)
         {
-            if (_connection == null || (!_connection.IsOpen))
+            var conectionFactory = new ConnectionFactory()
             {
-                var conectionFactory = new ConnectionFactory()
-                {
-                    HostName = _rabbitConf.Host,
-                    Port = _rabbitConf.Port,
-                    UserName = _rabbitConf.Username,
-                    Password = _rabbitConf.Password
-                };
+                HostName = _rabbitConf.Host,
+                Port = _rabbitConf.Port,
+                UserName = _rabbitConf.Username,
+                Password = _rabbitConf.Password
+            };
+            connection = conectionFactory.CreateConnection();
 
-                _connection = conectionFactory.CreateConnection();
-            }
-        }
-
-        private void Connect()
-        {
-            SetConnectionFactory();
             using (var channel = _connection.CreateModel())
             {
-                channel.ExchangeDeclare(_rabbitConf.MainExchange, ExchangeType.Direct, false); ;
+                channel.ExchangeDeclare(_rabbitConf.MainExchange, ExchangeType.Fanout, false);
+                channel.ExchangeDeclare(_rabbitConf.StaticsExchange, ExchangeType.Direct, false);
 
-                channel.QueueDeclare(queue: _rabbitConf.NewUsersQueque,
-                                     durable: false,
-                                     exclusive: false,
-                                     autoDelete: false,
-                                     arguments: null);
+                channel.QueueDeclare(_rabbitConf.NewUsersQueque,false, false);
+                channel.QueueDeclare(_rabbitConf.DeletedUsersQueque, false, false);
+                channel.QueueDeclare(_rabbitConf.UsersActionsQueue, false, false);
 
-                channel.QueueDeclare(queue: _rabbitConf.DeletedUsersQueque,
-                         durable: false,
-                         exclusive: false,
-                         autoDelete: false,
-                         arguments: null);
-
-                channel.QueueBind(_rabbitConf.NewUsersQueque, _rabbitConf.MainExchange, routingKey: _rabbitConf.RouterKey1);
-                channel.QueueBind(_rabbitConf.DeletedUsersQueque, _rabbitConf.MainExchange, routingKey: _rabbitConf.RouterKey2);
+                channel.QueueBind(_rabbitConf.NewUsersQueque, _rabbitConf.MainExchange, _rabbitConf.RouterKey1);
+                channel.QueueBind(_rabbitConf.DeletedUsersQueque, _rabbitConf.MainExchange, _rabbitConf.RouterKey2);
+                channel.QueueBind(_rabbitConf.UsersActionsQueue, _rabbitConf.StaticsExchange, _rabbitConf.UsersActionsRouterKey);
             }
-
-            _logger.LogInformation("[RabbitMQ] Connected.");
         }
 
-
-        public void PublishUser(User user, string exchange, string routerkey)
+        public void PublishUser(User user)
         {
             var objetoSerializado = JsonConvert.SerializeObject(user);
-            PublishMessage(objetoSerializado, exchange, routerkey);
+
+            if (Action.Deleted == user.UserAction)
+                PublishMessage(objetoSerializado, _rabbitConf.MainExchange, _rabbitConf.RouterKey1);
+
+            if(Action.Created == user.UserAction)
+                PublishMessage(objetoSerializado, _rabbitConf.MainExchange, _rabbitConf.RouterKey2);
+
+            PublishMessage(objetoSerializado, _rabbitConf.StaticsExchange, _rabbitConf.UsersActionsRouterKey);
         }
 
         public void PublishMessage(string message, string exchange, string routerkey)
