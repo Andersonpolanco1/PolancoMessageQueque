@@ -18,7 +18,12 @@ namespace Consumer1App.MessageQueque
 
         public RabbitMQConsumer(IOptions<RabbitMQConfig> options, ILogger<RabbitMQConsumer> logger)
         {
-            var rabbitMQConfig = options.Value;
+            _logger = logger;
+            Init(options.Value, out _connection, out _channel, out _queueName);
+        }
+
+        private static void Init(RabbitMQConfig rabbitMQConfig, out IConnection _connection, out IModel _channel, out string _queueName)
+        {
             var factory = new ConnectionFactory
             {
                 HostName = rabbitMQConfig.Host,
@@ -37,7 +42,6 @@ namespace Consumer1App.MessageQueque
                 autoDelete: false,
                 arguments: null
             );
-            this._logger = logger;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -51,6 +55,7 @@ namespace Consumer1App.MessageQueque
             catch (Exception ex)
             {
                 _logger.LogInformation($"[RabbitMQ] Error. {ex.Message}");
+                //Notificar que no se proceso el mensaje;
             }
       
             return Task.CompletedTask;
@@ -62,11 +67,23 @@ namespace Consumer1App.MessageQueque
             {
                 var message = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
                 var user = JsonConvert.DeserializeObject<User>(message);
-                HomeController.Users.Add(user);
+
+                if (user is null)
+                {
+                    _logger.LogInformation("[RabbitMQ] Can not save user, user is null");
+                    //enviar a cola de error aqui
+                }
+                else
+                {
+                    //Simula persistencia en bd (temporal)
+                    HomeController.Users.Add(user);
+                }
                 _channel.BasicAck(eventArgs.DeliveryTag, false);
             }
             catch (Exception ex)
-            {   
+            {
+                _logger.LogInformation($"[RabbitMQ] Error. {ex.Message}");
+                //enviar a cola de error aqui
                 throw;
             }
         }
