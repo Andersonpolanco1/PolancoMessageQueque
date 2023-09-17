@@ -70,7 +70,7 @@ namespace Consumer1App.MessageQueque
 
                 if (user is null)
                 {
-                    _logger.LogInformation("[RabbitMQ] Can not save user, user is null");
+                    _logger.LogInformation("[RabbitMQ] User to process is null.");
                     //enviar a cola de error aqui
                 }
                 else

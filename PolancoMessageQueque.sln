@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Producer", "PublisherMQ\Pro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Consumer1App", "Consumer1App\Consumer1App.csproj", "{EE749562-CBB9-4E11-AF45-5DDAFBF0D24D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer2App", "Consumer2App\Consumer2App.csproj", "{E22F34F5-E9D4-4A25-8742-8689BE9440DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{EE749562-CBB9-4E11-AF45-5DDAFBF0D24D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE749562-CBB9-4E11-AF45-5DDAFBF0D24D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE749562-CBB9-4E11-AF45-5DDAFBF0D24D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E22F34F5-E9D4-4A25-8742-8689BE9440DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E22F34F5-E9D4-4A25-8742-8689BE9440DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E22F34F5-E9D4-4A25-8742-8689BE9440DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E22F34F5-E9D4-4A25-8742-8689BE9440DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
