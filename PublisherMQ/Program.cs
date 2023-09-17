@@ -1,12 +1,19 @@
+using Microsoft.Extensions.Configuration;
+using Producer.ConfigModel;
+using Producer.MessageQueque;
+using RabbitMQ.Client;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.Configure<RabbitMQConfig>(
+    builder.Configuration.GetSection(RabbitMQConfig.SectionName));
 
+builder.Services.AddSingleton<IMessageQuequeProducer, RabbitMQProducer>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
