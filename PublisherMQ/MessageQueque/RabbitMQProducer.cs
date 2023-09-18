@@ -1,8 +1,13 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Polly;
+using Polly.Retry;
 using Producer.ConfigModel;
 using Producer.Models;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Exceptions;
+using System.Net.Sockets;
 using System.Text;
 using Action = Producer.Models.Action;
 
@@ -11,8 +16,8 @@ namespace Producer.MessageQueque
     public class RabbitMQProducer: IMessageQuequeProducer
     {
         private readonly RabbitMQConfig _rabbitConf;
-        private ILogger<RabbitMQProducer> _logger;
-        private IConnection _connection;
+        private readonly ILogger<RabbitMQProducer> _logger;
+        private readonly IConnection _connection;
 
         public RabbitMQProducer(IOptions<RabbitMQConfig> rabbitOptions, ILogger<RabbitMQProducer> logger)
         {
@@ -62,19 +67,22 @@ namespace Producer.MessageQueque
 
         private void PublishMessage(string message, string exchange, string routerkey)
         {
-            try
+            var attemp = 1;
+            Policy.Handle<BrokerUnreachableException>()
+            .Or<SocketException>() 
+            .WaitAndRetry(_rabbitConf.RetryPolicy, retryAttempt => TimeSpan.FromSeconds(Math.Pow(5, retryAttempt)), (ex, time) =>
+            {
+                _logger.LogError($"Error: {ex.Message}");
+                _logger.LogWarning($"{DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss")}. Retrying to publish in {time.TotalSeconds}s, retry {attemp}/{_rabbitConf.RetryPolicy}...");
+                attemp++;
+            })
+            .Execute(() =>
             {
                 using var channel = _connection.CreateModel();
                 var body = Encoding.UTF8.GetBytes(message);
                 channel.BasicPublish(exchange, routerkey, basicProperties: null, body: body);
-                _logger.LogInformation("[RabbitMQ] Mensaje enviado...");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning("No se pudo enviar el mensaje..." + ex.Message);
-                Dispose();
-            }
-
+                _logger.LogInformation($"[RabbitMQ] Published to {exchange}.");
+            });
         }
 
         public void Dispose()

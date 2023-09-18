@@ -25,7 +25,6 @@ namespace PublisherMQ.Controllers
         {
             //Aqui haces las acciones que debas hacer antes de publicar a las colas
             _producer.PublishUser(user);
-            _logger.LogInformation($"[RabbitMQ] Pusblished: UserId {user.Id}");
             return Ok();
         }
 

@@ -15,5 +15,6 @@
         public string StaticsExchange { get; set; }
         public string UsersActionsQueue { get; set; }
         public string UsersActionsRouterKey { get; set; }
+        public int RetryPolicy { get; set; }
     }
 }

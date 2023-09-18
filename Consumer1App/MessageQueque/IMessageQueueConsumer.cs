@@ -4,6 +4,6 @@ namespace Consumer1App.MessageQueque
 {
     public interface IMessageQueueConsumer : IHostedService
     {
-        void HandleMessage(object? sender, BasicDeliverEventArgs eventArgs);
+        void Message_OnReceived(object? sender, BasicDeliverEventArgs eventArgs);
     }
 }

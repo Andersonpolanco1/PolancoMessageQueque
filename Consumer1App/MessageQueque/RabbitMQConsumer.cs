@@ -49,7 +49,7 @@ namespace Consumer1App.MessageQueque
             try
             {
                 var consumer = new EventingBasicConsumer(_channel);
-                consumer.Received += (sender, eventArgs) => HandleMessage(sender,eventArgs); 
+                consumer.Received += Message_OnReceived; 
                 _channel.BasicConsume(_queueName, false, consumer);
             }
             catch (Exception ex)
@@ -61,7 +61,7 @@ namespace Consumer1App.MessageQueque
             return Task.CompletedTask;
         }
 
-        public void HandleMessage(object? sender, BasicDeliverEventArgs eventArgs)
+        public void Message_OnReceived(object? sender, BasicDeliverEventArgs eventArgs)
         {
             try
             {
