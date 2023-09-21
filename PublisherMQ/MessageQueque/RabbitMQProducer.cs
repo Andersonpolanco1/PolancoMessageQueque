@@ -67,14 +67,12 @@ namespace Producer.MessageQueque
 
         private void PublishMessage(string message, string exchange, string routerkey)
         {
-            var attemp = 1;
             Policy.Handle<BrokerUnreachableException>()
             .Or<SocketException>() 
-            .WaitAndRetry(_rabbitConf.RetryPolicy, retryAttempt => TimeSpan.FromSeconds(Math.Pow(5, retryAttempt)), (ex, time) =>
+            .WaitAndRetry(_rabbitConf.RetryPolicy, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), (ex, time, retryAttempt) =>
             {
                 _logger.LogError($"Error: {ex.Message}");
-                _logger.LogWarning($"{DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss")}. Retrying to publish in {time.TotalSeconds}s, retry {attemp}/{_rabbitConf.RetryPolicy}...");
-                attemp++;
+                _logger.LogWarning($"{DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss")}. Retrying to publish in {time.TotalSeconds}s, retry {retryAttempt}/{_rabbitConf.RetryPolicy}...");
             })
             .Execute(() =>
             {
